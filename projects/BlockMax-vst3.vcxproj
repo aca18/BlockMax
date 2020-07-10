@@ -339,6 +339,7 @@
     <ClInclude Include="..\..\..\IPlug\VST3\IPlugVST3_ProcessorBase.h" />
     <ClInclude Include="..\..\..\IPlug\VST3\IPlugVST3_View.h" />
     <ClInclude Include="..\ACA_Buf.h" />
+    <ClInclude Include="..\ACA_Grain.h" />
     <ClInclude Include="..\BlockMax.h" />
     <ClInclude Include="..\resources\resource.h" />
   </ItemGroup>

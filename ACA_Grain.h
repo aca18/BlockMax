@@ -25,12 +25,15 @@ public:
   
   double Process ()
   {
-    const double retval = mEnv.Read2(mEnvReadLoc) * mBuf->Read3(mReadLoc);
+    const double retval = mEnv.Read3(mEnvReadLoc) * mBuf->Read3(mReadLoc);
     mEnvReadLoc += mEnvReadIncrement;
     mReadLoc += mReadIncrement;
+    if (mReadLoc >= mBuf->GetSize()) {
+      mReadLoc = 0.0;
+    }
     if (mLoop) {
       if (mEnvReadLoc > mEnv.GetSize()) {
-        mEnv.Reset();
+        mEnvReadLoc = 0.;
         mReadLoc = mInitReadLoc;
       }
     }

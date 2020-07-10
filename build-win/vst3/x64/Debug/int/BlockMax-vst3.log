@@ -1,0 +1,30 @@
+﻿  BlockMax.cpp
+C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(49,1): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(50,1): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(71,1): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(73,1): warning C4305: 'argument': truncation from 'double' to 'float'
+  BlockMax-vst3.vcxproj -> C:\dev\iPlug2\Projects\BlockMax\build-win\vst3\x64\Debug\BlockMax.vst3
+  POSTBUILD SCRIPT VARIABLES -----------------------------------------------------
+  FORMAT ".vst3" 
+  NAME "BlockMax" 
+  PLATFORM "x64" 
+  COPY_VST2 "1" 
+  BUILT_BINARY "C:\dev\iPlug2\Projects\BlockMax\build-win\vst3\x64\Debug\BlockMax.vst3" 
+  VST2_32_PATH "C:\Program Files (x86)\VstPlugins" 
+  VST2_64_PATH "C:\Program Files\VstPlugins"  
+  VST3_32_PATH "C:\Program Files (x86)\Common Files\VST3" 
+  VST3_64_PATH "C:\Program Files\Common Files\VST3" 
+  BUILD_DIR "C:\dev\iPlug2\Projects\BlockMax\build-win"
+  VST_ICON "C:\dev\iPlug2\Projects\BlockMax\projects\..\..\..\Dependencies\IPlug\VST3_SDK\doc\artwork\VST_Logo_Steinberg.ico" 
+  AAX_ICON "C:\dev\iPlug2\Projects\BlockMax\projects\..\..\..\Dependencies\IPlug\AAX_SDK\Utilities\PlugIn.ico" 
+  CREATE_BUNDLE_SCRIPT "C:\dev\iPlug2\Projects\BlockMax\projects\..\..\..\Scripts\create_bundle.bat"
+  END POSTBUILD SCRIPT VARIABLES -----------------------------------------------------
+  copying 64bit binary to VST3 BUNDLE ...
+  Create AAX/VST3 Package Directories
+  Set Folder Icon
+          1 file(s) copied.
+  copying VST3 bundle to 64bit VST3 Plugins folder ...
+  Create AAX/VST3 Package Directories
+  Set Folder Icon
+  C:\dev\iPlug2\Projects\BlockMax\build-win\BlockMax.vst3\Contents\x86_64-win\BlockMax.vst3
+  1 File(s) copied

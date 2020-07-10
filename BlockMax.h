@@ -2,6 +2,7 @@
 
 #include "IPlug_include_in_plug_hdr.h"
 #include "ACA_Buf.h"
+#include "ACA_Grain.h"
 
 const int kNumPresets = 1;
 
@@ -9,6 +10,11 @@ enum EParams
 {
   kWindowLength = 0,
   kGain,
+  kPdcOnOff,
+  kGlitchOnOff,
+  kOverlapTime,
+  kFadeInTime,
+  kFadeOutTime,
   kNumParams
 };
 
@@ -33,7 +39,15 @@ private:
   int mCurrGrainL = 0;
   int mCurrGrainR = 1;
   double mPeakTarget = 1.0;
-  double mCurrBuffPos = 0.0;
-  double mBuffPosForGrains = 0.0;
+  double mCurrBufPos = 0.0;
+  double mBufPosForGrains = 0.0;
+  int mNumSamplesPerWindow = 4410;
+  int mInputCount;
+  bool mProcessFlagForPDC = false; //set to true in Process() to say it is ok to call SetLatency()
+  bool mPDCisEnabled = true;
+  bool mGlitchIsEnabled = false;
+  double mFadeInTime = 1.; //in ms
+  double mFadeOutTime = 1.; //in ms
+  double mOverlapTime = 0.; //in ms
 #endif
 };

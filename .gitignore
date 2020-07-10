@@ -15,9 +15,11 @@
 *.LSOverride
 *.xcuserdata
 *.xcschememanagement.plist
-build-*
 ipch/*
 gui/*
+*.RPP
+*.RPP-bak
+*.wav
 
 Icon?
 .DS_Stor*

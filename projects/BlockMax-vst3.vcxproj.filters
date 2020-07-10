@@ -385,6 +385,7 @@
       <Filter>IGraphics</Filter>
     </ClInclude>
     <ClInclude Include="..\ACA_Buf.h" />
+    <ClInclude Include="..\ACA_Grain.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
