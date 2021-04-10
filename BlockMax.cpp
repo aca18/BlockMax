@@ -7,14 +7,15 @@
 BlockMax::BlockMax(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
-  GetParam(kWindowLength)->InitDouble("Window Length", 100., 1., 100., 0.1, "ms");
+  GetParam(kWindowLength)->InitDouble("Window Length", 15., 0.1, 40., 0.1, "ms");
 
   GetParam(kOverlapTime)->InitDouble("Grain Overlap", 0., 0., 50., 0.1, "%");
   GetParam(kGlitchOnOff)->InitBool("Glitch", false);
   //GetParam(kFadeInTime)->InitDouble("Fade In", 0., 0., 100., 0.1, "%");
   //GetParam(kFadeOutTime)->InitDouble("Fade Out", 0., 0., 100., 0.1, "%");
 
-  GetParam(kGain)->InitDouble("Gain", 0., -24., 0., 0.01, "dB");
+  GetParam(kDry)->InitDouble("Dry", 0., -24., 0., 0.01, "dB");
+  GetParam(kGain)->InitDouble("Wet", 0., -24., 0., 0.01, "dB");
   GetParam(kPdcOnOff)->InitBool("PDC", true);
   //----------stuff for DSP
   mInputCount = 0;
@@ -49,9 +50,10 @@ BlockMax::BlockMax(const InstanceInfo& info)
     const IRECT titleRect = b.FracRectVertical(0.1, true).GetScaledAboutCentre(0.6);
     const IRECT ctrlRect = b.FracRectVertical(0.9, false).GetScaledAboutCentre(0.9);
 
-    const IRECT leftGrid = ctrlRect.GetGridCell(0, 1, 5, EDirection::Horizontal, 2);
-    const IRECT centerGrid = ctrlRect.GetGridCell(2, 1, 5, EDirection::Horizontal, 2);
-    const IRECT rightGrid = ctrlRect.GetGridCell(4, 1, 5, EDirection::Horizontal, 1);
+    const IRECT leftGrid = ctrlRect.GetGridCell(0, 1, 6, EDirection::Horizontal, 2);
+    const IRECT centerGrid = ctrlRect.GetGridCell(2, 1, 6, EDirection::Horizontal, 2);
+    const IRECT rightGrid = ctrlRect.GetGridCell(4, 1, 6, EDirection::Horizontal, 1);
+    const IRECT farRightGrid = ctrlRect.GetGridCell(5, 1, 6, EDirection::Horizontal, 1);
 
     /*
     const IRECT centerTop = centerGrid.GetGridCell(0, 3, 1, EDirection::Vertical, 1);
@@ -67,6 +69,9 @@ BlockMax::BlockMax(const InstanceInfo& info)
     const IRECT rightTopTwo = rightGrid.GetGridCell(0, 3, 1, EDirection::Vertical, 2);
     const IRECT rightBot = rightGrid.GetGridCell(2, 3, 1, EDirection::Vertical, 1);
 
+    const IRECT farRightTopTwo = farRightGrid.GetGridCell(0, 3, 1, EDirection::Vertical, 2);
+    const IRECT farRightBot = farRightGrid.GetGridCell(2, 3, 1, EDirection::Vertical, 1);
+
     pGraphics->AttachControl(new ITextControl(titleRect, "-  B L O C K    M A X  -", IText(20)));
     pGraphics->AttachControl(new IVSliderControl(leftTopTwo.GetScaledAboutCentre(0.9), kWindowLength, "", DEFAULT_STYLE, true, EDirection::Horizontal));
     
@@ -77,8 +82,10 @@ BlockMax::BlockMax(const InstanceInfo& info)
     pGraphics->AttachControl(new IVKnobControl(centerMid, kFadeInTime));
     pGraphics->AttachControl(new IVKnobControl(centerBot, kFadeOutTime));
     */
-    pGraphics->AttachControl(new IVKnobControl(rightTopTwo, kGain));
+    pGraphics->AttachControl(new IVKnobControl(rightTopTwo, kDry));
     pGraphics->AttachControl(new IVToggleControl(rightBot, kPdcOnOff));
+
+    pGraphics->AttachControl(new IVKnobControl(farRightTopTwo, kGain));
   };
 #endif
 }
@@ -108,20 +115,25 @@ void BlockMax::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
       mGrains[mCurrGrainR].SetPlaybackPosition(mCurrBufPos - mNumSamplesPerWindow + numOverlapSamples);
       mGrains[mCurrGrainL].ResetWindow();
       mGrains[mCurrGrainR].ResetWindow();
-      mGrainGainFactors[mCurrGrainL] = mPeakTarget / mGrains[mCurrGrainL].GetAbsMax();
-      mGrainGainFactors[mCurrGrainR] = mPeakTarget / mGrains[mCurrGrainR].GetAbsMax();
+      mGrainGainFactors[mCurrGrainL] = 1.0 / mGrains[mCurrGrainL].GetAbsMax();
+      mGrainGainFactors[mCurrGrainR] = 1.0 / mGrains[mCurrGrainR].GetAbsMax();
     }
 
     //read from grains and scale by gain factor
     //since grains are set to not loop, out-of-bounds index requests
     //should just return 0.0
     for (int i = 0; i < mNumGrains - 1; i += 2) {
-      outputs[0][s] += mGrains[i].Process() * mGrainGainFactors[i];
+      outputs[0][s] += mGrains[i].Process() * (mDryGain - 1.0 + mPeakTarget * mGrainGainFactors[i]);
       if (nChans > 1) {
-        outputs[1][s] += mGrains[i + 1].Process() * mGrainGainFactors[i + 1];
+        outputs[1][s] += mGrains[i + 1].Process() * (mDryGain - 1.0 + mPeakTarget * mGrainGainFactors[i + 1]);
       }
     }
-
+    if (mPDCisEnabled) {
+      outputs[0][s] = mDelayL.Process(outputs[0][s]);
+      if (nChans > 1) {
+        outputs[1][s] = mDelayR.Process(outputs[1][s]);
+      }
+    }
     mCurrBufPos = mCurrBufPos + 1.;
     if (mCurrBufPos > mBuf1.GetSize()) {
       mCurrBufPos = 0.;
@@ -139,6 +151,26 @@ void BlockMax::OnReset()
     mGrains[i].ResetWindow();
   }
   mNumSamplesPerWindow = GetSampleRate() * GetParam(kWindowLength)->Value() * 0.001;
+  mOverlapTime = GetParam(kOverlapTime)->Value() * 0.01 * GetParam(kWindowLength)->Value();
+  mOverlapSamples = int(mOverlapTime * GetSampleRate() * 0.001);
+  mPdcBlockLength = (int(GetSampleRate() / 44100.) + 1) * 1024;
+  mDelayL.SetDelayInSamples(mPdcBlockLength - mNumSamplesPerWindow + mOverlapSamples);
+  mDelayR.SetDelayInSamples(mPdcBlockLength - mNumSamplesPerWindow + mOverlapSamples);
+  mPDCisEnabled = GetParam(kPdcOnOff)->Value();
+  if (mProcessFlagForPDC) {
+    if (mPDCisEnabled) {
+      try {
+        SetLatency(mPdcBlockLength);
+      }
+      catch (...) {}
+    }
+    else {
+      try {
+        SetLatency(0);
+      }
+      catch (...) {}
+    }
+  }
 }
 
 void BlockMax::OnParamChange(int paramIdx)
@@ -147,7 +179,10 @@ void BlockMax::OnParamChange(int paramIdx)
   case kGain:
   {
     mPeakTarget = DBToAmp(GetParam(kGain)->Value());
-    std::cout<<mPeakTarget<<"/n";
+    if (GetParam(kGain)->Value() <= -23.99) {
+      mPeakTarget = 0.;
+    }
+    //std::cout<<mPeakTarget<<"/n";
     break;
   }
   case kWindowLength:
@@ -159,13 +194,7 @@ void BlockMax::OnParamChange(int paramIdx)
     for (int i = 0; i < mNumGrains; i++) {
       mGrains[i].SetLengthInMs(newLength);
     }
-    mNumSamplesPerWindow = GetSampleRate() * newLength * 0.001;
-    if (mProcessFlagForPDC && mPDCisEnabled) {
-      try {
-        SetLatency(mNumSamplesPerWindow);
-      }
-      catch (...) {}
-    }
+   
     //overlap time
     if (!mGlitchIsEnabled) {
       mOverlapTime = GetParam(kOverlapTime)->Value() * 0.01 * newLength;
@@ -178,6 +207,19 @@ void BlockMax::OnParamChange(int paramIdx)
     for (int i = 0; i < mNumGrains; i++) {
       mGrains[i].SetFades(fadeInLength, fadeOutLength, 1.0, 1.0);
     }
+    mOverlapSamples = int(mOverlapTime * GetSampleRate() * 0.001);
+    mNumSamplesPerWindow = int(GetSampleRate() * newLength * 0.001);
+    mDelayL.SetDelayInSamples(mPdcBlockLength - mNumSamplesPerWindow + mOverlapSamples);
+    mDelayR.SetDelayInSamples(mPdcBlockLength -mNumSamplesPerWindow + mOverlapSamples);
+    /*
+    if (mProcessFlagForPDC && mPDCisEnabled) {
+      try {
+        SetLatency(mNumSamplesPerWindow - mOverlapSamples);
+      }
+      catch (...) {}
+    }
+    */
+
     break;
   }
   case kPdcOnOff:
@@ -186,7 +228,7 @@ void BlockMax::OnParamChange(int paramIdx)
     if (mProcessFlagForPDC) {
       if (mPDCisEnabled) {
         try {
-          SetLatency(mNumSamplesPerWindow);
+          SetLatency(mPdcBlockLength);
         }
         catch (...) {}
       }
@@ -218,6 +260,14 @@ void BlockMax::OnParamChange(int paramIdx)
       for (int i = 0; i < mNumGrains; i++) {
         mGrains[i].SetFades(fadeInLength, fadeOutLength, 1.0, 1.0);
       }
+    }
+    break;
+  }
+  case kDry:
+  {
+    mDryGain = DBToAmp(GetParam(kDry)->Value());
+    if (GetParam(kDry)->Value() <= -23.99) {
+      mDryGain = 0.;
     }
     break;
   }

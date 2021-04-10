@@ -1,8 +1,8 @@
 ﻿  BlockMax.cpp
-C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(49,1): warning C4305: 'argument': truncation from 'double' to 'float'
 C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(50,1): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(71,1): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(73,1): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(51,1): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(76,1): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\dev\iPlug2\Projects\BlockMax\BlockMax.cpp(78,1): warning C4305: 'argument': truncation from 'double' to 'float'
   BlockMax-vst3.vcxproj -> C:\dev\iPlug2\Projects\BlockMax\build-win\vst3\x64\Debug\BlockMax.vst3
   POSTBUILD SCRIPT VARIABLES -----------------------------------------------------
   FORMAT ".vst3" 

@@ -386,6 +386,7 @@
     </ClInclude>
     <ClInclude Include="..\ACA_Buf.h" />
     <ClInclude Include="..\ACA_Grain.h" />
+    <ClInclude Include="..\SampleDelay.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

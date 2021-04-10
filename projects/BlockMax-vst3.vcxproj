@@ -342,6 +342,7 @@
     <ClInclude Include="..\ACA_Grain.h" />
     <ClInclude Include="..\BlockMax.h" />
     <ClInclude Include="..\resources\resource.h" />
+    <ClInclude Include="..\SampleDelay.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Dependencies\IPlug\VST3_SDK\base\source\baseiids.cpp" />
